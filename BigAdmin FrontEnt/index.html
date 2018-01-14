@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Pedagang Toko</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="font-awesome.css">
+    <link rel="stylesheet" href="bulma.min.css">
+</head>
+<body>
+
+	<!-- <template> -->
+		<div id="toko" class="container">
+			<h1 class="title is-3">Bagian Toko</h1>
+			<h2 class="title is-4">
+				Toko : {{ mencungul }}
+			</h2>
+
+			<br><br>
+
+			<table class="table is-narrow is-striped is-bordered is-fullwidth is-hoverable" width="80%">
+				<thead>
+					<tr>
+						<th>ID Barang</th>
+						<th>Nama Barang</th>
+						<th>Harga</th>
+						<th>Stok</th>
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="item in items">
+						<td>{{item.id}}</td>
+						<td>{{item.nama}}</td>
+						<td>{{item.harga}}</td>
+						<td>{{item.stok}}</td>
+					</tr>
+				</tbody>
+			</table>
+
+		</div>
+	<!-- </template> -->
+
+	<script src="node_modules/axios/dist/axios.min.js"></script>
+	<script src="node_modules/vue/dist/vue.js"></script>
+	<script src="node_modules/vue-axios/dist/vue-axios.min.js"></script>
+	<script src="swal.min.js"></script>
+	<script src="app.js"></script>
+</body>
+</html>

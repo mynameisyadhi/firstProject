@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Admin Toko - Daftar Toko Baru</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="font-awesome.css">
+    <link rel="stylesheet" href="bulma.min.css">
+</head>
+<body>
+
+	<div id="tokoBaru" class="container">
+		<h1 class="title is-2">{{judul}}</h1>
+		<form>
+			<h1 class="title is-4">KODE TOKO : {{ idToko }}</h1>
+			<input type="text" class="input" name="idToko" placeholder="Masukan ID Toko" v-model="idToko"><br><br>
+			<h1 class="title is-4">NAMA TOKO : {{ namaToko }}</h1>
+			<input type="text" class="input" name="namaToko" placeholder="Masukan Nama Toko" v-model="namaToko"><br><br>
+			<h1 class="title is-4">LOKASI TOKO</h1>
+			<div class="field">
+				<div class="control">
+					<textarea class="textarea is-info" type="text" placeholder="Masukan Alamat Lokasi Toko berada ... "></textarea>
+				</div>
+			</div>
+			<button class="button is-info">Tambah Data</button>
+			<input type="reset" name="reset" value="Batal" class="button is-danger">
+		</form>
+		<br><br>
+		<table class="table is-striped is-bordered is-narrow is-fullwidth is-hoverable" width="100%">
+			<thead>
+				<tr>
+					<th>Kode Toko</th>
+					<th>Nama Toko</th>
+					<th>Lokasi Toko</th>
+					<th colspan="2">Modifikasi Data</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="store in stores">
+					<td>{{store.idToko}}</td>
+					<td>{{store.namaToko}}</td>
+					<td>{{store.lokasiToko}}</td>
+					<td width="8%"><button class="button is-danger">Hapus</button></td>
+					<td width="8%"><button class="button is-success">Update</button></td>
+				</tr>
+			</tbody>
+		</table>
+
+	</div>
+
+	<script src="node_modules/axios/dist/axios.min.js"></script>
+	<script src="node_modules/vue/dist/vue.js"></script>
+	<script src="node_modules/vue-axios/dist/vue-axios.min.js"></script>
+	<script src="swal.min.js"></script>
+	<script type="text/javascript">
+		var app = new Vue({
+			el: '#tokoBaru',
+			data: {
+				judul: 'Selamat Datang pada Halaman Admin untuk Mendata Toko',
+				idToko: '',
+				namaToko: '',
+				lokasiToko: '',
+				stores: [{idToko: 'T0001', namaToko: 'Nurcahya Berkah', lokasiToko: 'Amuntai'}]
+			},
+			methods: {
+
+			}
+		})
+	</script>
+</body>
+</html>
