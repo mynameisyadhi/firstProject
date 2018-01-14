@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Admin Toko - Daftar Barang Baru</title>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="font-awesome.css">
+    <link rel="stylesheet" href="bulma.min.css">
+</head>
+<body>
+
+	<div id="admin" class="container">
+		<h1 class="title is-2">{{halaman}}</h1>
+		<div class="notification is-danger" v-show="samaCuy">
+			<button class="delete" v-on:click="tutupDanger()"></button>
+			Oops.. ID barang telah dipakai, coba id yang lain !
+		</div>
+		<div class="notification is-danger" v-show="kosongCuy">
+			<button class="delete" v-on:click="tutupDanger()"></button>
+			ID barang atau Nama Barang tidak boleh kosong !
+		</div>
+		<form>
+			<h1 class="title is-4">ID BARANG : {{id}}</h1>
+			<input type="text" name="idbarang" placeholder="ID Barang" v-model="id" class="input" id="janganEdit" required=""> <br><br>
+			<h1 class="title is-4">NAMA BARANG : {{nama}}</h1>
+			<input type="text" name="namabarang" placeholder="Nama Barang" v-model="nama" class="input" required=""><br><br>
+			<h1 class="title is-4">HARGA BARANG (SATUAN) : {{hargaSatuan}}</h1>
+			<input type="text" name="hargabarangastuan" placeholder="Harga Barang Satuan" v-model="hargaSatuan" class="input" required=""><br><br>
+			<h1 class="title is-4">HARGA BARANG (PARTAI) : {{hargaPartai}}</h1>
+			<input type="text" name="hargabarangpartai" placeholder="Harga Barang Partai" v-model="hargaPartai" class="input" required=""><br><br>
+			<h1 class="title is-4">STOK BARANG : {{stok}}</h1>
+			<input type="text" name="stokbarang" placeholder="Stok Barang" v-model="stok" class="input" required=""><br><br>
+
+			<!-- <input type="submit" name="kirim" value="Kirim Request"> -->
+			<button v-on:click.prevent="kirimData(id,nama,hargaSatuan,hargaPartai,stok)" class="button is-info" id="disable2" v-show="!editMode">Tambah Data</button>
+			<input type="reset" name="reset" value="Reset" class="button is-danger" id="disable1" v-show="!editMode">
+			<button v-on:click.prevent="simpanPerubahan(id,nama,hargaSatuan,hargaPartai,stok)" class="button is-warning" v-if="editMode">Simpan Perubahan</button>	
+			<button v-on:click.prevent="batalSimpan()" class="button is-danger" v-if="editMode">Batal</button>
+		</form>
+		<!-- <br> -->
+		<!-- belum bisa dipakai sebagai mana mestinya -->
+		<!-- <div class="field has-addons">
+		  <div class="control">
+		    <input class="input is-rounded" type="text" placeholder="Masukan ID Barang ..." v-model="search">
+		  </div>
+		  <div class="control">
+		    <a class="button is-info">
+		      Cari
+		    </a>
+		  </div>
+		</div> -->
+		<br><br>
+		<div class="notification is-success" v-if="hapusCuy">
+			<button class="delete" v-on:click="tutupHapus()"></button>
+			Data dengan berhasil dihapus !
+		</div>
+		<table class="table is-striped is-bordered is-narrow is-fullwidth is-hoverable" width="100%">
+			<thead>
+				<tr>
+					<th>ID Barang</th>
+					<th>Nama Barang</th>
+					<th>Harga Satuan</th>
+					<th>Harga Partai</th>
+					<th>Stok</th>
+					<th colspan="2">Modifikasi Data</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="item in items" :key="item.id">
+				<!-- <tr v-repeat="users | filterBy search | orderBy sortKey reverse"> -->
+					<td>{{item.id }}</td>
+					<td>{{item.nama }}</td>
+					<td>{{item.hargaSatuan}}</td>
+					<td>{{item.hargaPartai}}</td>
+					<td>{{item.stok}}</td>
+					<td width="8%"><button class="button is-danger" v-on:click.prevent="hapusData(item.id)">Hapus</button></td>
+					<td width="8%"><button class="button is-success" v-on:click.prevent="ubahData(item.id,item.nama,item.hargaSatuan,item.hargaPartai,item.stok)">Update</button></td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+
+	<script src="node_modules/axios/dist/axios.min.js"></script>
+	<script src="node_modules/vue/dist/vue.js"></script>
+	<script src="node_modules/vue-axios/dist/vue-axios.min.js"></script>
+	<script src="swal.min.js"></script>
+	<script>
+
+		var app = new Vue({
+			el: '#admin', // elemen yang digunakan vue adalah atribut id bernama admin
+			data: {
+				sortKey: 'id', // sortkey berdasarkan id (masih belum berguna)
+				id: '', // form id yang akan digunakan untuk mengisi id barang
+				nama: '', // form nama yang akan digunakan untuk mengisi nama barang
+				hargaSatuan: '',
+				hargaPartai: '',
+				stok: '',
+				editMode: false,
+				items: [{ id: 'B0001', nama: 'Beras', hargaSatuan: 8000, hargaPartai: 60000, stok: 30 }], // data default sebagai contoh
+				halaman: 'Selamat Datang di Halaman Admin', // halaman sambut admin
+				hapusCuy: false, // digunakan pada alert hapus pesan
+				samaCuy: false, // digunakan pada alert id barang sudah ada
+				kosongCuy: false, // digunakan pada alert id barang dan nama barang tidak boleh kosong
+				search: '', // yang nantinya akan digunakan untuk searching barang berdasarkan id barang
+				edit: false
+			},
+			mounted() {
+				// Saat pertama kali halaman diload, maka akan fetching semua data dari database
+				// fetchData()
+				// document.getElementById('disable3').setAttribute('disable3', 'true');
+			},
+			computed: {
+				// orderedItems: function() {
+				// 	return this.items.orderBy(this.id, 'id')
+				// }
+			},
+			methods: {
+				// untuk melakukan sorting
+				sortBy: function() {
+					this.reverse = (this.sortKey == sortKey) ? ! this.reverse : false;
+					this.sortKey = sortKey;
+				},
+				//untuk melakukan fetch data
+				fetchData: function() {
+					axios.get('http://localhost:3000/index').then(function(res) {
+
+					})
+				},
+				// untuk mengirim data ke database
+				kirimData: function(idb, namab, hargasb, hargapb, stokb) {
+					// axios.post('/tujuan/', {
+					// 	id_barang: this.toko.id,
+					// 	nama_barang: this.toko.nama
+					// }).then(function(response) {
+					// 	console.log(response)
+					// }).catch(function(error) {
+					// 	console.log(error.message)
+					// })
+					// axios({
+					// 	method: 'post',
+					// 	url: 'http://localhost:3000/index',
+					// 	data: {
+					// 		id: idbarang,
+					// 		nama: namabarang
+					// 	}
+					// });
+
+					let deal = true;
+
+					if(idb == '' && namab == '') {
+						this.kosongCuy = true;
+						deal = false;
+					}
+
+					this.items.forEach(el => {
+						if(el.id == idb) {
+							this.samaCuy = true;
+							deal = false;
+						}
+					});
+
+					if(deal) {
+						this.items.push({
+							id: idb,
+							nama: namab,
+							hargaSatuan: hargasb,
+							hargaPartai: hargapb,
+							stok: stokb
+						});			
+					}
+
+					this.id = '';
+					this.nama = '';
+					this.harga = '';
+					this.stok = '';
+					console.log(this.items);
+				},
+				// untuk melakukan edit data (nama barang)
+				ubahData: function(idb,namab,hargasb,hargapb,stokb) {
+
+					this.id = idb;
+					this.nama = namab;
+					this.hargaSatuan = hargasb;
+					this.hargaPartai = hargapb;
+					this.stok = stokb;
+					document.getElementById('janganEdit').setAttribute('readonly', 'true');
+					// document.getElementById('disable1').setAttribute('disabled', 'true');
+					// document.getElementById('disable2').setAttribute('disabled', 'true');
+					// document.getElementById('disable3').removeAttribute('disabled');
+					this.editMode = true;
+					console.log(this.items);
+				},
+				// untuk menghapus data yang sudah tidak terpakai
+				hapusData: function(idb) {
+
+					swal({
+						title: 'Apakah Anda yakin ?',
+						text: 'Anda akan menghapus data ini selamanya!',
+						icon: 'warning',
+						buttons: ['tidak !', 'iya !'],
+						dangerMode: true,
+					}).then((willDelete) => {
+						if(willDelete) {
+							let i = 0;
+							this.items.forEach(el => {
+								// console.log(el.id);
+								if(el.id == idb) {
+									this.items.splice(i,1);
+								}
+								i++;
+							});
+
+							this.hapusCuy = !this.hapusCuy;
+							// console.log(this.items)
+							swal('Data Anda berhasil dihapus!', {
+								icon: 'success',
+							});
+
+						} else {
+							swal('Anda telah membatalkan!');
+						}
+					});
+
+					// console.log(idb);
+					
+				},
+				// untuk menyimpan data yang telah diedit / diubah nama barangnya
+				simpanPerubahan: function(idb,namab,hargasb,hargapb,stokb) {
+					let deal = true;
+
+					if(idb == '' && namab == '') {
+						this.kosongCuy = true;
+						deal = false;
+					}
+
+					if(deal) {
+						swal({
+							title: 'Apakah Anda ingin menyimpan ?',
+							text: 'Anda akan merubah Nama Barang!',
+							icon: 'warning',
+							buttons: ['tidak !', 'iya !'],
+							dangerMode: true,
+						}).then((willSave) => {
+							if(willSave) {
+								console.log(idb);
+								let i = 0;
+								// untuk mencari data yang akan diubah nama barangnya
+								this.items.forEach(el => {
+									console.log(el.id + ' dan ' + idb);
+									if(el.id == idb) {
+										this.items.splice(i,1);
+										this.items.push({
+											id: idb,
+											nama: namab,
+											hargaSatuan: hargasb,
+											hargaPartai: hargapb,
+											stok: stokb
+										});
+									}
+									i++;
+								});
+								this.items.sort();
+								document.getElementById('janganEdit').removeAttribute('readonly');
+								// document.getElementById('disable1').removeAttribute('disabled');
+								// document.getElementById('disable2').removeAttribute('disabled');
+								// document.getElementById('disable3').setAttribute('disabled', 'true');
+								
+								console.log(this.items);
+								swal('Anda telah merubah data barang!', {
+									icon: 'success',
+								});		
+								this.id = '';
+								this.nama = '';
+								this.hargaSatuan = '';
+								this.hargaPartai = '';
+								this.stok = '';
+								this.editMode = false;
+							} else {
+								swal('Anda telah membatalkan!');
+							}
+						});
+					}
+				},
+				// untuk menutup pesan alert (data telah dihapus)
+				tutupHapus: function() {
+					this.hapusCuy = !this.hapusCuy;
+				},
+				// untuk menutup pesan alert (data tidak boleh kosong, atau id barang sudah ada)
+				tutupDanger: function() {
+					if(this.samaCuy) this.samaCuy = !this.samaCuy;
+					if(this.kosongCuy) this.kosongCuy = !this.kosongCuy;
+				},
+				// untuk mengurutkan list barang yang ada
+				sortedArray: function() {
+		    		function compare(a, b) {
+		      			if (a.id < b.id)
+				        	return -1;
+				      	if (a.id > b.id)
+				        	return 1;
+				      	return 0;
+				    }
+		    		return this.items.sort(compare);
+		  		},
+		  		batalSimpan: function() {
+		  			this.id = '';
+		  			this.nama = '';
+		  			this.hargaSatuan = '';
+		  			this.hargaPartai = '';
+		  			this.stok = '';
+
+		  			document.getElementById('janganEdit').removeAttribute('readonly');
+					// document.getElementById('disable1').removeAttribute('disabled');
+					// document.getElementById('disable2').removeAttribute('disabled');
+					// document.getElementById('disable3').setAttribute('disabled', 'true');
+
+					this.editMode = false;
+		  		}
+			}
+		})
+	</script>
+</body>
+</html>
