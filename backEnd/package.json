@@ -1,0 +1,35 @@
+{
+  "name": "niera-mvc",
+  "version": "0.0.1",
+  "description": "This is a mvc framework based on expressjs",
+  "main": "app.js",
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "keywords": [
+    "niera",
+    "restfulapi",
+    "framework",
+    "web",
+    "api",
+    "app",
+    "mvc",
+    "express",
+    "javascript"
+  ],
+  "author": "Nurcahya Ari",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.5.1",
+    "body-parser": "~1.17.1",
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.3",
+    "ejs": "^2.6.1",
+    "express": "~4.15.2",
+    "morgan": "~1.8.1",
+    "mysql2": "^1.5.3",
+    "pug": "~2.0.0-beta11",
+    "sequelize": "^4.37.7",
+    "serve-favicon": "~2.4.2"
+  }
+}
